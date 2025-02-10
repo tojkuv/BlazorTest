@@ -1,0 +1,67 @@
+﻿@page "/editclient/{id:int}"
+@using BlazorTest.Services
+@using BlazorTest.Entities
+@inject ClientService ClientService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>@(Client.Id == 0 ? "Add Client" : "Edit Client")</h3>
+
+<div class="mb-3">
+    <label class="form-label">Name</label>
+    <input class="form-control" @bind="Client.Name" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Email</label>
+    <input class="form-control" @bind="Client.Email" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Phone</label>
+    <input class="form-control" @bind="Client.Phone" />
+</div>
+
+<button class="btn btn-success" @onclick="SaveClient">Save</button>
+<button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Client Client { get; set; } = new Client();
+
+    protected override void OnInitialized()
+    {
+        if (Id != 0)
+        {
+            var existingClient = ClientService.GetClientById(Id);
+            if (existingClient != null)
+            {
+                Client = new Client
+                    {
+                        Id = existingClient.Id,
+                        Name = existingClient.Name,
+                        Email = existingClient.Email,
+                        Phone = existingClient.Phone
+                    };
+            }
+        }
+    }
+
+    private void SaveClient()
+    {
+        if (Client.Id == 0)
+        {
+            ClientService.AddClient(Client);
+        }
+        else
+        {
+            ClientService.UpdateClient(Client);
+        }
+        Navigation.NavigateTo("/clients");
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/clients");
+    }
+}
