@@ -1,5 +1,4 @@
 using BlazorApp.Components;
-using BlazorTest.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddSingleton<ClientService>();
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl!) });
+
 
 var app = builder.Build();
 

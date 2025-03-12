@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace BlazorApp.Entities
+namespace ClientApi.Entities
 {
     public class Client
     {

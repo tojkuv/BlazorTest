@@ -1,54 +1,67 @@
 ﻿@page "/clients"
-@using BlazorTest.Services
-@inject ClientService ClientService
+@using BlazorApp.Entities
 @inject NavigationManager Navigation
+@inject HttpClient HttpClient
 @rendermode InteractiveServer
 
 <h3>Clients</h3>
 
 <table class="table">
     <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Actions</th>
-        </tr>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Actions</th>
+    </tr>
     </thead>
     <tbody>
-        @foreach (var client in ClientService.GetClients())
-        {
-            <tr>
-                <td>@client.Id</td>
-                <td>@client.Name</td>
-                <td>@client.Email</td>
-                <td>@client.Phone</td>
-                <td>
-                    <button class="btn btn-primary" @onclick="() => EditClient(client.Id)">Edit</button>
-                    <button class="btn btn-danger" @onclick="() => DeleteClient(client.Id)">Delete</button>
-                </td>
-            </tr>
-        }
+    @foreach (var client in _clients)
+    {
+        <tr>
+            <td>@client.Id</td>
+            <td>@client.Name</td>
+            <td>@client.Email</td>
+            <td>@client.Phone</td>
+            <td>
+                <button class="btn btn-primary" @onclick="() => EditClient(client.Id)">Edit</button>
+                <button class="btn btn-danger" @onclick="() => DeleteClient(client.Id)">Delete</button>
+            </td>
+        </tr>
+    }
     </tbody>
 </table>
 
 <button class="btn btn-success" @onclick="CreateClient">Add New Client</button>
 
 @code {
+    private List<Client> _clients = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadClients();
+    }
+
+    private async Task LoadClients()
+    {
+        _clients = await HttpClient.GetFromJsonAsync<List<Client>>("api/clients") ?? [];
+        StateHasChanged();
+    }
+
     private void EditClient(int id)
     {
-        Navigation.NavigateTo($"/editclient/{id}");
+        Navigation.NavigateTo($"editclient/{id}");
     }
 
     private void CreateClient()
     {
-        Navigation.NavigateTo("/editclient/0");
+        Navigation.NavigateTo("editclient/0");
     }
 
-    private void DeleteClient(int id)
+    private async void DeleteClient(int id)
     {
-        ClientService.DeleteClient(id);
-        StateHasChanged();
+        await HttpClient.DeleteAsync($"api/clients/{id}");
+        await LoadClients();
     }
 }

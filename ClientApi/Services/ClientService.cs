@@ -1,11 +1,10 @@
-﻿using BlazorTest.Entities;
-using System.Xml.Linq;
+﻿using ClientApi.Entities;
 
-namespace BlazorTest.Services
+namespace ClientApi.Services
 {
     public class ClientService
     {
-        private List<Client> _clients = new List<Client>();
+        private List<Client> _clients = [];
 
         public ClientService()
         {
@@ -27,12 +26,12 @@ namespace BlazorTest.Services
         public void UpdateClient(Client client)
         {
             var existingClient = GetClientById(client.Id);
-            if (existingClient != null)
-            {
-                existingClient.Name = client.Name;
-                existingClient.Email = client.Email;
-                existingClient.Phone = client.Phone;
-            }
+
+            if (existingClient == null) return;
+
+            existingClient.Name = client.Name;
+            existingClient.Email = client.Email;
+            existingClient.Phone = client.Phone;
         }
 
         public void DeleteClient(int id)

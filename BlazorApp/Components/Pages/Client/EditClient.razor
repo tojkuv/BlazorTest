@@ -1,63 +1,70 @@
 ﻿@page "/editclient/{id:int}"
-@using BlazorTest.Services
-@using BlazorTest.Entities
-@inject ClientService ClientService
+@using BlazorApp.Entities
 @inject NavigationManager Navigation
+@inject HttpClient HttpClient
 @rendermode InteractiveServer
 
 <h3>@(Client.Id == 0 ? "Add Client" : "Edit Client")</h3>
 
-<div class="mb-3">
-    <label class="form-label">Name</label>
-    <input class="form-control" @bind="Client.Name" />
-</div>
+<EditForm OnValidSubmit="SaveClient" Model="Client">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
 
-<div class="mb-3">
-    <label class="form-label">Email</label>
-    <input class="form-control" @bind="Client.Email" />
-</div>
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input class="form-control" @bind="Client.Name"/>
+    </div>
 
-<div class="mb-3">
-    <label class="form-label">Phone</label>
-    <input class="form-control" @bind="Client.Phone" />
-</div>
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" @bind="Client.Email"/>
+    </div>
 
-<button class="btn btn-success" @onclick="SaveClient">Save</button>
-<button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    <div class="mb-3">
+        <label class="form-label">Phone</label>
+        <input class="form-control" @bind="Client.Phone"/>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</EditForm>
 
 @code {
     [Parameter] public int Id { get; set; }
+
     private Client Client { get; set; } = new Client();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (Id != 0)
         {
-            var existingClient = ClientService.GetClientById(Id);
+            var existingClient = await HttpClient.GetFromJsonAsync<Client>($"api/clients/{Id}");
+
             if (existingClient != null)
             {
-                Client = new Client
-                    {
-                        Id = existingClient.Id,
-                        Name = existingClient.Name,
-                        Email = existingClient.Email,
-                        Phone = existingClient.Phone
-                    };
+                Client = existingClient;
             }
         }
     }
 
-    private void SaveClient()
+    private async Task SaveClient()
     {
         if (Client.Id == 0)
         {
-            ClientService.AddClient(Client);
+            var response = await HttpClient.PostAsJsonAsync("api/clients", Client);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/clients");
+            }
         }
         else
         {
-            ClientService.UpdateClient(Client);
+            var response = await HttpClient.PutAsJsonAsync($"api/clients/{Client.Id}", Client);
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/clients");
+            }
         }
-        Navigation.NavigateTo("/clients");
     }
 
     private void Cancel()
